@@ -1,3 +1,4 @@
+using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 using Project_v3.Models;
 
@@ -9,6 +10,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AplicationDbContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("DefaultConnection")
     ));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
