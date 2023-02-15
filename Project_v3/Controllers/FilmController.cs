@@ -1,14 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Project_v3.Models;
 
 namespace Project_v3.Controllers
 {
     public class FilmController : Controller
     {
+        private readonly AplicationDbContext _context;
+        public FilmController(AplicationDbContext context) 
+        { 
+            this._context = context;
+        }
         // GET: FilmController
         public ActionResult Index()
         {
-            return View();
+            var films = _context.Films.ToList();
+            return View(Films); 
         }
 
         // GET: FilmController/Details/5
