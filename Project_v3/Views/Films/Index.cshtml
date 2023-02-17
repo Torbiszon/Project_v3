@@ -51,7 +51,8 @@
             <td>
                 <a asp-action="Edit" asp-route-id="@item.FilmId">Edytuj</a> |
                 <a asp-action="Details" asp-route-id="@item.FilmId">Szczegóły</a> |
-                <a asp-action="Delete" asp-route-id="@item.FilmId">Usuń</a>
+                <a asp-action="Delete" asp-route-id="@item.FilmId">Usuń</a> |
+                <button type="submit" onclick='@Url.Action("index", "Films", new {id= item.FilmId})'>like</button>
             </td>
         </tr>
 }

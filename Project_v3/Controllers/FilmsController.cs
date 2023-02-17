@@ -17,13 +17,23 @@ namespace Project_v3.Controllers
         {
             _context = context;
         }
-
+        
         // GET: Films
         public async Task<IActionResult> Index()
         {
               return View(await _context.Films.ToListAsync());
         }
-
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Index(int id)
+        {
+            var film = _context.Films.FirstOrDefault(o => o.FilmId == id);
+            film.FilmCount++;
+            _context.SaveChanges();
+            return View(film);
+        }
+        
         // GET: Films/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -79,6 +89,7 @@ namespace Project_v3.Controllers
             }
             return View(films);
         }
+
 
         // POST: Films/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
