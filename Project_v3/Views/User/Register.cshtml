@@ -1,0 +1,22 @@
+﻿@model Project_v3.Models.RegisterModel
+@{
+
+}
+<form method="post">
+    <Div class="form-group input-group">
+        <label asp-for="UserName"></label>
+        <input asp-for="UserName" class="form-control"/>
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </Div>
+    <Div class="form-group input-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </Div>
+    <Div class="form-group input-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </Div>
+    <button type="submit" class="btn-success">Register</button>
+</form>
