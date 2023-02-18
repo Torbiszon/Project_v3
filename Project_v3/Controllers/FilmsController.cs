@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,17 +17,20 @@ namespace Project_v3.Controllers
     [Route("films")]
     public class FilmsController : Controller
     {
+        private UserManager<AppUser> _userManager;
         private readonly AplicationDbContext _context;
 
-        public FilmsController(AplicationDbContext context)
+        public FilmsController(AplicationDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
         [AllowAnonymous]
         [HttpGet("Index")]
         public ActionResult<IEnumerable<Films>> Index()
         {
-            var result = _context.Films.Include(x => x.Director).ToList();
+            var result = _context.Films.Include(x => x.Director).Include(f => f.Users).ToList();
+
             return View(result);
         }
 
@@ -42,6 +47,8 @@ namespace Project_v3.Controllers
         }
 
         // GET: Films/Details/5
+        [AllowAnonymous]
+        [HttpGet("details/{id}")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Films == null)
@@ -56,7 +63,45 @@ namespace Project_v3.Controllers
                 return NotFound();
             }
 
-            return View();
+            return View(films);
+        }
+        [Authorize(Roles = "User, Moderator")]
+        public async Task<ActionResult> Rank(int id)
+        {
+            var film = _context.Films.Include(f => f.Users).FirstOrDefault(x => x.Id == id);
+            var user = await _userManager.GetUserAsync(User);
+            var user1 = _context.Users.Include(x => x.films).FirstOrDefault(f => f.Id == user.Id);
+            if (film != null && user != null)
+            {
+                if (film.Users.IndexOf(user1) >= 0)
+                {
+                    film.Users.Remove(user1);
+                    user1.films.Remove(film);
+                    if (film.FilmCount > 0)
+                    {
+                        film.FilmCount--;
+                    }
+                }
+                else
+                {
+                    user1.films.Add(film);
+                    film.Users.Add(user1);
+                    film.FilmCount++;
+                }
+            }
+            else
+            {
+                return NotFound();
+            }
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+        [HttpGet("ranking")]
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<Films>> Ranking()
+        {
+            var result = _context.Films.Include(x => x.Director).OrderByDescending(s => s.FilmCount).ToList();
+            return View(result);
         }
 
         [Authorize(Roles = "Moderator")]

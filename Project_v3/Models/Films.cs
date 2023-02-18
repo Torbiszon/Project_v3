@@ -22,6 +22,6 @@ namespace Project_v3.Models
      
         public Director Director { get; set; }
 
-        public List<AppUser> Users { get; set;}
+        public List<AppUser>? Users { get; set;}
     }
 }

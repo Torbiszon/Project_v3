@@ -53,32 +53,61 @@
                     @Html.DisplayFor(modelItem => item.Director.fullname)
                 </td>
                 <td>
-                    <form method="post" asp-controller="Films" asp-action="Description" asp-route-id="@item.Id">
-                        <button type="submit" asp-route-id="@item.Id">
-                            description
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-secondary" onclick="window.location= '@Url.Action( "details", "films", new { id=@item.Id})' ">
+                         Description
+                    </button>
                 </td>
                 @if(User.Identity.IsAuthenticated)
                 {
                     if(User.IsInRole("User"))
                     {
+
                         <td>
-                        <form method="post" asp-controller="Films" asp-action="Rank" asp-route-id="@item.Id">
-                            <button type="submit" asp-route-id="@item.Id">
-                                like
-                            </button>
-                        </form>
-                    </td>
+                            @{
+                                bool like = false;
+                            }
+                            @foreach (var r in item.Users)
+                            {
+                                if (r.UserName == User.Identity.Name)
+                                {
+                                    <button type="button" class="btn btn-success" onclick="window.location= '@Url.Action( "rank", "films", new { id=@item.Id})' ">
+                                        Liked
+                                    </button>
+                                    like = true;
+                                }
+
+                            }
+                            @if (like == false)
+                            {
+                                <button type="button" class="btn btn-secondary" onclick="window.location= '@Url.Action( "rank", "films", new { id=@item.Id})' ">
+                                    Like
+                                </button>
+                            }
+                        </td>
                     }
+
                     else if(User.IsInRole("Moderator"))
                     {
+
                         <td>
-                            <form method="post" asp-controller="Films" asp-action="Rank" asp-route-id="@item.Id">
-                                <button type="submit" asp-route-id="@item.Id">
-                                    like
-                                </button>
-                            </form>
+                            @{bool like = false; }
+                                @foreach (var r in item.Users)
+                                {
+                                    if (r.UserName == User.Identity.Name)
+                                    {
+                                        <button type="button" class="btn btn-success" onclick="window.location= '@Url.Action( "rank", "films", new { id=@item.Id})' ">
+                                        Liked
+                                    </button>
+                                    like = true;
+                                }
+                                
+                            }
+                            @if (like == false)
+                                {
+                                <button type="button" class="btn btn-secondary" onclick="window.location= '@Url.Action( "rank", "films", new { id=@item.Id})' ">
+                                Like
+                                </button>   
+                                }
                         </td>
                         <td>
                         <button type="button" onclick="window.location= '@Url.Action( "edit", "films", new { id=@item.Id})' ">
