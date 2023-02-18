@@ -1,14 +1,14 @@
 ﻿@model IEnumerable<Project_v3.Models.Films>
 
-@{
-    ViewData["Title"] = "Film";
-}
-
 <h1>Filmy Lista</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if(User.Identity.IsAuthenticated && User.IsInRole("Moderator"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -21,30 +21,28 @@
             <th>
                 @Html.DisplayNameFor(model => model.Director.fullname)
             </th>
-            @if (User.Identity.IsAuthenticated)
-            {
-                <th>
-
-                </th>
-            }
             <th>
                 <div>Details</div>
-            </th>
-            @if (User.IsInRole("Moderator"))
+            </th>  
+            @if(User.Identity.IsAuthenticated)
             {
-                <th>
-
-                </th>
-                <th>
-
-                </th>
+                if(User.IsInRole("User"))
+                {
+                    <th></th>
+                }
+                else if(User.IsInRole("Moderator"))
+                {
+                    <th></th>
+                    <th></th>
+                }
             }
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        
+        @foreach(var item in Model)
         {
-            <tr>
+        <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.FilmName)
                 </td>
@@ -54,16 +52,6 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Director.fullname)
                 </td>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <td>
-                        <form method="post" asp-controller="Films" asp-action="Rank" asp-route-id="@item.Id">
-                            <button type="submit" asp-route-id="@item.Id">
-                                like
-                            </button>
-                        </form>
-                    </td>
-                }
                 <td>
                     <form method="post" asp-controller="Films" asp-action="Description" asp-route-id="@item.Id">
                         <button type="submit" asp-route-id="@item.Id">
@@ -71,18 +59,38 @@
                         </button>
                     </form>
                 </td>
-                @if (User.Identity.IsAuthenticated && User.IsInRole("Moderator"))
+                @if(User.Identity.IsAuthenticated)
                 {
-                    <td>
-                        <button type="button" onclick="window.location= '@Url.Action( "edit", "films", new { id=@item.Id}))' ">
-                             Edit
+                    if(User.IsInRole("User"))
+                    {
+                        <td>
+                        <form method="post" asp-controller="Films" asp-action="Rank" asp-route-id="@item.Id">
+                            <button type="submit" asp-route-id="@item.Id">
+                                like
+                            </button>
+                        </form>
+                    </td>
+                    }
+                    else if(User.IsInRole("Moderator"))
+                    {
+                        <td>
+                            <form method="post" asp-controller="Films" asp-action="Rank" asp-route-id="@item.Id">
+                                <button type="submit" asp-route-id="@item.Id">
+                                    like
+                                </button>
+                            </form>
+                        </td>
+                        <td>
+                        <button type="button" onclick="window.location= '@Url.Action( "edit", "films", new { id=@item.Id})' ">
+                            Edit
                         </button>
                     </td>
                     <td>
-                        <button type="button" onclick="window.location= '@Url.Action( "Delete", "films", new { id=@item.Id}))' ">
+                        <button type="button" onclick="window.location= '@Url.Action( "Delete", "films", new { id=@item.Id})' ">
                             Delete
                         </button>
                     </td>
+                    }
                 }
             </tr>
         }

@@ -1,4 +1,4 @@
-﻿@model Project_v3.Models.Films
+﻿@model Project_v3.Models.EditFilm
 
 @{
     ViewData["Title"] = "Edit";
@@ -28,12 +28,6 @@
                 <input asp-for="FilmType" class="form-control" />
                 <span asp-validation-for="FilmType" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="FilmCount" class="control-label"></label>
-                <input asp-for="FilmCount" class="form-control" />
-                <span asp-validation-for="FilmCount" class="text-danger"></span>
-            </div>
-            
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

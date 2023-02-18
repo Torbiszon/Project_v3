@@ -28,7 +28,7 @@ namespace Project_v3.Controllers
             var result = _context.Films.Include(x => x.Director).ToList();
             return View(result);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Index(int id)
@@ -36,11 +36,11 @@ namespace Project_v3.Controllers
             var film = _context.Films.FirstOrDefault(o => o.Id == id);
             film.FilmCount++;
             _context.SaveChanges();
-            
+
             return View();
-            
+
         }
-        
+
         // GET: Films/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -48,14 +48,14 @@ namespace Project_v3.Controllers
             {
                 return NotFound();
             }
-            
+
             var films = await _context.Films
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (films == null)
             {
                 return NotFound();
             }
-            
+
             return View();
         }
 
@@ -85,25 +85,25 @@ namespace Project_v3.Controllers
 
         public async Task<IActionResult> Create(CreateFilm film)
         {
-           
-                var directors = _context.Directors.FirstOrDefault(x => x.fullname == film.selectedDirector);
-                if (directors == null)
-                {
-                    return NotFound();
-                }
-                Films Cfilm = new Films()
-                {
-                    
-                    FilmName = film.FilmName,
-                    FilmDescription = film.FilmDescription,
-                    FilmType = film.FilmType,
-                    Directorfullname = directors.fullname,
-                    
-                };
-                Cfilm.Director = directors;
-                _context.Add(Cfilm);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+            var directors = _context.Directors.FirstOrDefault(x => x.fullname == film.selectedDirector);
+            if (directors == null)
+            {
+                return NotFound();
+            }
+            Films Cfilm = new Films()
+            {
+
+                FilmName = film.FilmName,
+                FilmDescription = film.FilmDescription,
+                FilmType = film.FilmType,
+                Directorfullname = directors.fullname,
+
+            };
+            Cfilm.Director = directors;
+            _context.Add(Cfilm);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
 
         }
         [Authorize(Roles = "Moderator")]
@@ -120,7 +120,13 @@ namespace Project_v3.Controllers
             {
                 return NotFound();
             }
-            return View(films);
+            EditFilm editfilm = new EditFilm()
+            {
+                FilmName = films.FilmName,
+                FilmDescription = films.FilmDescription,
+                FilmType = films.FilmType
+            };
+            return View(editfilm);
         }
 
 
@@ -128,25 +134,37 @@ namespace Project_v3.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize(Roles = "Moderator")]
-        [HttpPost("edite/{id}")]
+        [HttpPost("edit/{id}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("FilmId,FilmName,FilmDescription,FilmType,FilmCount,DirectorId")] Films films)
+        public async Task<IActionResult> Edit([FromRoute] int id, EditFilm film)
         {
-            if (id != films.Id)
+            var check = _context.Films.FirstOrDefault(x => x.Id == id);
+            if (check == null)
             {
                 return NotFound();
             }
-
+            Films films = new Films()
+            {
+                Id = check.Id,
+                FilmName = film.FilmName,
+                FilmDescription = film.FilmDescription,
+                FilmType = film.FilmType,
+                FilmCount = check.FilmCount,
+                Directorfullname = check.Directorfullname,
+                Director = check.Director,
+                Users = check.Users
+            };
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(films);
+                    _context.Films.Remove(check);
+                    _context.Films.Update(films);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FilmsExists(films.Id))
+                    if (!FilmsExists(id))
                     {
                         return NotFound();
                     }
@@ -157,10 +175,11 @@ namespace Project_v3.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(films);
+            return View(film);
         }
-
-        // GET: Films/Delete/5
+        [Authorize(Roles = "Moderator")]
+        [HttpGet("delete/{id}")]
+        
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Films == null)
@@ -174,14 +193,15 @@ namespace Project_v3.Controllers
             {
                 return NotFound();
             }
-            
-            return View();
+
+            return View(films);
         }
 
         // POST: Films/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [Authorize(Roles = "Moderator")]
+        [HttpPost("delete/{id}")]
+        
+        public async Task<IActionResult> Delete([FromRoute]int id)
         {
             if (_context.Films == null)
             {
@@ -192,15 +212,12 @@ namespace Project_v3.Controllers
             {
                 _context.Films.Remove(films);
             }
-            
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool FilmsExists(int id)
         {
             return _context.Films.Any(e => e.Id == id);
-            
         }
     }
 }

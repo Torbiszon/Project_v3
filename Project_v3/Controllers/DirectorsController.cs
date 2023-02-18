@@ -11,21 +11,26 @@ using Project_v3.Models;
 
 namespace Project_v3.Controllers
 {
+    [Route("director")]
+    [Authorize(Roles = "Moderator")]
     public class DirectorsController : Controller
     {
         private readonly AplicationDbContext _context;
-
+        
         public DirectorsController(AplicationDbContext context)
         {
             _context = context;
         }
 
         // GET: Directors
+        
+        [HttpGet("index")]
         public async Task<IActionResult> Index()
         {
               return View(await _context.Directors.ToListAsync());
         }
-
+        
+        [HttpGet("details")]
         // GET: Directors/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -43,8 +48,8 @@ namespace Project_v3.Controllers
 
             return View(director);
         }
-        [Authorize(Roles = "Moderator")]
-        [HttpGet("director/create")]
+        
+        [HttpGet("create")]
         public IActionResult Create()
         {
             
@@ -54,8 +59,8 @@ namespace Project_v3.Controllers
         // POST: Directors/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize(Roles = "Moderator")]
-        [HttpPost("director/create")]
+        
+        [HttpPost("create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateDirector dir)
         {
@@ -74,7 +79,8 @@ namespace Project_v3.Controllers
             return View();
         }
 
-        // GET: Directors/Edit/5
+        
+        [HttpGet("edit/{id}")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Directors == null)
@@ -87,31 +93,46 @@ namespace Project_v3.Controllers
             {
                 return NotFound();
             }
-            return View(director);
+            EditDirector editdirector = new EditDirector()
+            {
+                Name = director.Name,
+                Surname = director.Surname
+            };
+
+            return View(editdirector);
         }
 
         // POST: Directors/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname")] Director director)
+        
+        [HttpPost("edit/{id}")]
+        public async Task<IActionResult> Edit([FromRoute]int id, EditDirector director)
         {
-            if (id != director.Id)
+            var check = _context.Directors.FirstOrDefault(x => x.Id == id);
+            if (check == null)
             {
                 return NotFound();
             }
-
+            Director director2 = new Director()
+            {
+                Id = check.Id,
+                Name = director.Name,
+                Surname = director.Surname,
+                fullname = check.fullname,
+                Films = check.Films
+            };
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(director);
+                    _context.Directors.Remove(check);
+                    _context.Directors.Update(director2);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DirectorExists(director.Id))
+                    if (!DirectorExists(director2.Id))
                     {
                         return NotFound();
                     }

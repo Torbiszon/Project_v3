@@ -80,5 +80,11 @@ namespace Project_v3.Controllers
             }
             return View(login);
         }
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+
+            return RedirectToAction("Login");
+        }
     }
 }
