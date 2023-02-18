@@ -12,8 +12,8 @@ using Project_v3.Models;
 namespace Project_v3.Migrations
 {
     [DbContext(typeof(AplicationDbContext))]
-    [Migration("20230217195426_Migration_v4")]
-    partial class Migration_v4
+    [Migration("20230218023251_migration_V5")]
+    partial class migration_V5
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,12 +30,12 @@ namespace Project_v3.Migrations
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("filmsFilmId")
+                    b.Property<int>("filmsId")
                         .HasColumnType("int");
 
-                    b.HasKey("UsersId", "filmsFilmId");
+                    b.HasKey("UsersId", "filmsId");
 
-                    b.HasIndex("filmsFilmId");
+                    b.HasIndex("filmsId");
 
                     b.ToTable("AppUserFilms");
                 });
@@ -254,6 +254,10 @@ namespace Project_v3.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("fullname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Directors");
@@ -261,14 +265,11 @@ namespace Project_v3.Migrations
 
             modelBuilder.Entity("Project_v3.Models.Films", b =>
                 {
-                    b.Property<int>("FilmId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FilmId"));
-
-                    b.Property<int>("DirectorId")
-                        .HasColumnType("int");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("FilmCount")
                         .HasColumnType("int");
@@ -285,7 +286,12 @@ namespace Project_v3.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("FilmId");
+                    b.Property<int>("directorId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("directorId");
 
                     b.ToTable("Films");
                 });
@@ -300,7 +306,7 @@ namespace Project_v3.Migrations
 
                     b.HasOne("Project_v3.Models.Films", null)
                         .WithMany()
-                        .HasForeignKey("filmsFilmId")
+                        .HasForeignKey("filmsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -354,6 +360,22 @@ namespace Project_v3.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Project_v3.Models.Films", b =>
+                {
+                    b.HasOne("Project_v3.Models.Director", "director")
+                        .WithMany("films")
+                        .HasForeignKey("directorId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
+
+                    b.Navigation("director");
+                });
+
+            modelBuilder.Entity("Project_v3.Models.Director", b =>
+                {
+                    b.Navigation("films");
                 });
 #pragma warning restore 612, 618
         }

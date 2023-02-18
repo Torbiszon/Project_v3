@@ -19,9 +19,12 @@ namespace Project_v3.Models
             modelBuilder.Entity<AppUser>()
                 .HasMany(x => x.films)
                 .WithMany(x => x.Users);
-                
-
-       
+            modelBuilder.Entity<Films>()
+                .HasOne(s => s.Director)
+                .WithMany(x => x.Films)
+                .HasForeignKey(s => s.Directorfullname)
+                .HasPrincipalKey(x => x.fullname)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

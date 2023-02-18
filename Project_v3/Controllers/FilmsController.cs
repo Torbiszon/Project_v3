@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,8 @@ using Project_v3.Models;
 
 namespace Project_v3.Controllers
 {
+    [Authorize]
+    [Route("films")]
     public class FilmsController : Controller
     {
         private readonly AplicationDbContext _context;
@@ -17,21 +21,24 @@ namespace Project_v3.Controllers
         {
             _context = context;
         }
-        
-        // GET: Films
-        public async Task<IActionResult> Index()
+        [AllowAnonymous]
+        [HttpGet("Index")]
+        public ActionResult<IEnumerable<Films>> Index()
         {
-              return View(await _context.Films.ToListAsync());
+            var result = _context.Films.Include(x => x.Director).ToList();
+            return View(result);
         }
         
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Index(int id)
         {
-            var film = _context.Films.FirstOrDefault(o => o.FilmId == id);
+            var film = _context.Films.FirstOrDefault(o => o.Id == id);
             film.FilmCount++;
             _context.SaveChanges();
-            return View(film);
+            
+            return View();
+            
         }
         
         // GET: Films/Details/5
@@ -41,40 +48,66 @@ namespace Project_v3.Controllers
             {
                 return NotFound();
             }
-
+            
             var films = await _context.Films
-                .FirstOrDefaultAsync(m => m.FilmId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (films == null)
             {
                 return NotFound();
             }
-
-            return View(films);
+            
+            return View();
         }
 
-        // GET: Films/Create
+        [Authorize(Roles = "Moderator")]
+        [HttpGet("create")]
         public IActionResult Create()
         {
-            return View();
+            var list = _context.Directors.ToList();
+            List<string> fullname = new List<string>();
+            foreach (var item in list)
+            {
+                fullname.Add(item.fullname);
+            }
+            CreateFilm director = new CreateFilm()
+            {
+                FullNames = fullname
+            };
+            return View(director);
         }
 
         // POST: Films/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [Authorize(Roles = "Moderator")]
+        [HttpPost("create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FilmId,FilmName,FilmDescription,FilmType,FilmCount,DirectorId")] Films films)
+
+        public async Task<IActionResult> Create(CreateFilm film)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(films);
+           
+                var directors = _context.Directors.FirstOrDefault(x => x.fullname == film.selectedDirector);
+                if (directors == null)
+                {
+                    return NotFound();
+                }
+                Films Cfilm = new Films()
+                {
+                    
+                    FilmName = film.FilmName,
+                    FilmDescription = film.FilmDescription,
+                    FilmType = film.FilmType,
+                    Directorfullname = directors.fullname,
+                    
+                };
+                Cfilm.Director = directors;
+                _context.Add(Cfilm);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
-            }
-            return View(films);
-        }
 
-        // GET: Films/Edit/5
+        }
+        [Authorize(Roles = "Moderator")]
+        [HttpGet("edit/{id}")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Films == null)
@@ -94,11 +127,12 @@ namespace Project_v3.Controllers
         // POST: Films/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [Authorize(Roles = "Moderator")]
+        [HttpPost("edite/{id}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("FilmId,FilmName,FilmDescription,FilmType,FilmCount,DirectorId")] Films films)
         {
-            if (id != films.FilmId)
+            if (id != films.Id)
             {
                 return NotFound();
             }
@@ -112,7 +146,7 @@ namespace Project_v3.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FilmsExists(films.FilmId))
+                    if (!FilmsExists(films.Id))
                     {
                         return NotFound();
                     }
@@ -135,13 +169,13 @@ namespace Project_v3.Controllers
             }
 
             var films = await _context.Films
-                .FirstOrDefaultAsync(m => m.FilmId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (films == null)
             {
                 return NotFound();
             }
-
-            return View(films);
+            
+            return View();
         }
 
         // POST: Films/Delete/5
@@ -165,7 +199,8 @@ namespace Project_v3.Controllers
 
         private bool FilmsExists(int id)
         {
-          return _context.Films.Any(e => e.FilmId == id);
+            return _context.Films.Any(e => e.Id == id);
+            
         }
     }
 }

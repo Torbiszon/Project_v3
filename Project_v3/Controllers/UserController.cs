@@ -23,34 +23,62 @@ namespace Project_v3.Controllers
 
         [AllowAnonymous]
         [HttpGet("register")]
-        public IActionResult Register() 
+        public ActionResult Register() 
         {
             return View();
         }
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterModel register)
+        public async Task<ActionResult> Register([FromForm]RegisterModel register)
         {
-            AppUser user = new AppUser()
+            if (ModelState.IsValid)
             {
-                UserName = register.UserName,
-                Email = register.Email,
-            };
-            var result = await _userManager.CreateAsync(user, register.Password);
-            if (result.Succeeded)
-            {
-                var role = _roleManager.FindByNameAsync("User").Result;
-                if(role != null)
+                AppUser user = new AppUser()
                 {
-                    await _userManager.AddToRoleAsync(user, role.Name); 
-                    return RedirectToAction("login","user");
+                    UserName = register.UserName,
+                    Email = register.Email,
+                };
+                var result = await _userManager.CreateAsync(user, register.Password);
+                if (result.Succeeded)
+                {
+                    var role = _roleManager.FindByNameAsync("User").Result;
+                    if (role != null)
+                    {
+                        IdentityResult res = await _userManager.AddToRoleAsync(user, role.Name);
+                    }
                 }
-
-
+                foreach(var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
             }
+            
             return View(register);
 
+        }
+        [AllowAnonymous]
+        [HttpGet("login")]
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public async Task<ActionResult> Login(LoginModel login)
+        {
+            var user = _context
+                .Users
+                .FirstOrDefault(x => x.UserName == login.UserName);
+            if (user != null)
+            {
+                if ((await _signInManager.PasswordSignInAsync(login.UserName, login.Password, false, false)).Succeeded)
+                {
+                    return RedirectToAction("index", "Films");
+                }
+            }
+            return View(login);
         }
     }
 }

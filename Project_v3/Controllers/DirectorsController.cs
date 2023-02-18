@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Project_v3.Models;
 
 namespace Project_v3.Controllers
@@ -41,27 +43,35 @@ namespace Project_v3.Controllers
 
             return View(director);
         }
-
-        // GET: Directors/Create
+        [Authorize(Roles = "Moderator")]
+        [HttpGet("director/create")]
         public IActionResult Create()
         {
+            
             return View();
         }
 
         // POST: Directors/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [Authorize(Roles = "Moderator")]
+        [HttpPost("director/create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Surname")] Director director)
+        public async Task<IActionResult> Create(CreateDirector dir)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(director);
+                Director dir1 = new Director()
+                {
+                    Name = dir.Name,
+                    Surname = dir.surname,
+                    fullname = $"{dir.Name} {dir.surname}"
+                };
+                _context.Add(dir1);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(director);
+            return View();
         }
 
         // GET: Directors/Edit/5

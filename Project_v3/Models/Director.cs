@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
 
 namespace Project_v3.Models
 {
@@ -9,5 +10,7 @@ namespace Project_v3.Models
         public string Name { get; set; }
         [Display (Name = "Nazwisko")]
         public string Surname { get; set; }
+        public string fullname { get; set; }
+        public  List<Films> Films { get; set; }
     }
 }

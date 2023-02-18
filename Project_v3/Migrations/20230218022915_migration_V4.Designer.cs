@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Project_v3.Models;
 
@@ -11,9 +12,11 @@ using Project_v3.Models;
 namespace Project_v3.Migrations
 {
     [DbContext(typeof(AplicationDbContext))]
-    partial class AplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230218022915_migration_V4")]
+    partial class migration_V4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -253,7 +256,7 @@ namespace Project_v3.Migrations
 
                     b.Property<string>("fullname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -267,10 +270,6 @@ namespace Project_v3.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Directorfullname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("FilmCount")
                         .HasColumnType("int");
@@ -287,9 +286,12 @@ namespace Project_v3.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("directorId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Directorfullname");
+                    b.HasIndex("directorId");
 
                     b.ToTable("Films");
                 });
@@ -362,19 +364,18 @@ namespace Project_v3.Migrations
 
             modelBuilder.Entity("Project_v3.Models.Films", b =>
                 {
-                    b.HasOne("Project_v3.Models.Director", "Director")
-                        .WithMany("Films")
-                        .HasForeignKey("Directorfullname")
-                        .HasPrincipalKey("fullname")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("Project_v3.Models.Director", "director")
+                        .WithMany("films")
+                        .HasForeignKey("directorId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.Navigation("Director");
+                    b.Navigation("director");
                 });
 
             modelBuilder.Entity("Project_v3.Models.Director", b =>
                 {
-                    b.Navigation("Films");
+                    b.Navigation("films");
                 });
 #pragma warning restore 612, 618
         }

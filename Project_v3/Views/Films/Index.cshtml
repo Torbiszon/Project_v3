@@ -16,45 +16,75 @@
                 @Html.DisplayNameFor(model => model.FilmName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FilmDescription)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.FilmType)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FilmCount)
+                @Html.DisplayNameFor(model => model.Director.fullname)
             </th>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <th>
+
+                </th>
+            }
             <th>
-                @Html.DisplayNameFor(model => model.DirectorId)
+                <div>Details</div>
             </th>
-            <th></th>
+            @if (User.IsInRole("Moderator"))
+            {
+                <th>
+
+                </th>
+                <th>
+
+                </th>
+            }
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FilmName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FilmDescription)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FilmType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FilmCount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DirectorId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.FilmId">Edytuj</a> |
-                <a asp-action="Details" asp-route-id="@item.FilmId">Szczegóły</a> |
-                <a asp-action="Delete" asp-route-id="@item.FilmId">Usuń</a> |
-                <button type="submit" onclick='@Url.Action("index", "Films", new {id= item.FilmId})'>like</button>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FilmName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FilmType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Director.fullname)
+                </td>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <td>
+                        <form method="post" asp-controller="Films" asp-action="Rank" asp-route-id="@item.Id">
+                            <button type="submit" asp-route-id="@item.Id">
+                                like
+                            </button>
+                        </form>
+                    </td>
+                }
+                <td>
+                    <form method="post" asp-controller="Films" asp-action="Description" asp-route-id="@item.Id">
+                        <button type="submit" asp-route-id="@item.Id">
+                            description
+                        </button>
+                    </form>
+                </td>
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Moderator"))
+                {
+                    <td>
+                        <button type="button" onclick="window.location= '@Url.Action( "edit", "films", new { id=@item.Id}))' ">
+                             Edit
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" onclick="window.location= '@Url.Action( "Delete", "films", new { id=@item.Id}))' ">
+                            Delete
+                        </button>
+                    </td>
+                }
+            </tr>
+        }
     </tbody>
 </table>

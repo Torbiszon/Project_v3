@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Project_v3.Models;
 
@@ -11,9 +12,11 @@ using Project_v3.Models;
 namespace Project_v3.Migrations
 {
     [DbContext(typeof(AplicationDbContext))]
-    partial class AplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230217230707_migration_V1")]
+    partial class migration_V1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,10 +254,6 @@ namespace Project_v3.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("fullname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Directors");
@@ -267,10 +266,6 @@ namespace Project_v3.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Directorfullname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("FilmCount")
                         .HasColumnType("int");
@@ -287,9 +282,12 @@ namespace Project_v3.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("directorId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Directorfullname");
+                    b.HasIndex("directorId");
 
                     b.ToTable("Films");
                 });
@@ -362,19 +360,18 @@ namespace Project_v3.Migrations
 
             modelBuilder.Entity("Project_v3.Models.Films", b =>
                 {
-                    b.HasOne("Project_v3.Models.Director", "Director")
-                        .WithMany("Films")
-                        .HasForeignKey("Directorfullname")
-                        .HasPrincipalKey("fullname")
+                    b.HasOne("Project_v3.Models.Director", "director")
+                        .WithMany("films")
+                        .HasForeignKey("directorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Director");
+                    b.Navigation("director");
                 });
 
             modelBuilder.Entity("Project_v3.Models.Director", b =>
                 {
-                    b.Navigation("Films");
+                    b.Navigation("films");
                 });
 #pragma warning restore 612, 618
         }
